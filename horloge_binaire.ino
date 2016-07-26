@@ -39,8 +39,9 @@ const int pin_heure[4][4] = {
 const int pin_detecteur_mouvement = 14;
 // // detecteur de distance.
 const int pin_detecteur_distance = 15;
+const int pin_emetteur_distance = 15;
 // // capteur de température.
-const int pin_temperature = 16;
+const int pin_temperature = 17;
 
 // Fonction pour passer d'un nombre décimal à un nombre binaire et le stocker dans une liste (4 bits donc 0<= nombre < 16). Utilisation de la division euclidienne.
 bool* decimalVersBinaire(const int nombre_decimal){
@@ -83,8 +84,8 @@ void afficheNombreSurLED (const int nombre_decimal, const int colonne){
   bool* nombre_binaire = decimalVersBinaire(nombre_decimal);
   for (int ligne=0; ligne<4; ligne++){
     allumeLED(ligne, colonne, nombre_binaire[ligne]);
-//    delay(1000);
-//    eteindreLED(ligne, colonne);
+    delay(5);
+    eteindreLED(ligne, colonne);
   }
 }
 
@@ -106,7 +107,7 @@ int separeQuatreChiffres(const int nombre){
 
 // Affiche l'heure pendant un certains temps tant que le capteur de distance ne reçoit pas de nouvelles valeurs.
 void affichageHeure(){
-//  int distance = distanceCapteur();  
+//  int distance = distanceCapteur();
   int dizaine_heure, unite_heure = separeDeuxChiffres(hour());
   int dizaine_minute, unite_minute = separeDeuxChiffres(minute());
   unsigned long temps, temps_relatif = millis(), millis();
@@ -123,54 +124,28 @@ void affichageHeure(){
   }
 }
 
-// Récupère la distance du capteur à ultrasons et la classe suivant l'affichage voulu correspondant (horloge, date, temperature).
+// Récupère la distance du capteur à ultrasons.
 int distanceCapteur(){
-  // TODO
-    /*
-    int trigger=7; //”trigger” on pin 7.
-    int echo=6; //”echo” on pin 6.
-    long time=0; //The value “time” will safe the time between transmission and
-    //returning of the soundwave.
-    long dist=0; //The value “dist” will save the calculated distance. It will
+    long temps_aller_retour=0;
+    long distance=0; //The value “distance” will save the calculated distance. It will
     //start with “0”. Instead of “int” we are using “long” for this value, to save a
     //bigger number.
-    void setup()
-    {
-    Serial.begin (9600); //Starting the serial communication. It will send the
-    //data from the arduino board to the computer to show it on the serial monitor.
-    pinMode(trigger, OUTPUT); //”trigger” (Pin 7) is an output.
-    pinMode(echo, INPUT); //”echo” (Pin 6) is an input.
-    }
-    void loop()
-    {
-    digitalWrite(trigger, LOW); //Low voltage on the trigger pin to produce a
+    digitalWrite(pin_detecteur_distance, LOW); //Low voltage on the trigger pin to produce a
     //clear signal.
     delay(5); //….for 5 milliseconds.
-    digitalWrite(trigger, HIGH); //Creating the soundwave.
+    digitalWrite(pin_detecteur_distance, HIGH); //Creating the soundwave.
     delay(10); //..for 10 milliseconds.
-    digitalWrite(trigger, LOW); //Stop creating the soundwave.
+    digitalWrite(pin_detecteur_distance, LOW); //Stop creating the soundwave.
     52 
-    time = pulseIn(echo, HIGH); //With the command pulseIn (Capital “i” in the
+    time = pulseIn(pin_emetteur_distance, HIGH); //With the command pulseIn (Capital “i” in the
     //front of the “n”) the arduino board measures the time between sending and
     //receiving the soundwave.
-    dist = (time/2) / 29.1; //This calculation transforms the measured time into
+    distance = (temps_aller_retour/2) / 29.1; //This calculation transforms the measured time into
     //the distance in centimeter. (The sound needs 29,1 seconds for one centimeter.
     //The time gets divided with two, because we only want to get one distance and
     //not the two ways that the soundwave has to take).
-    if (dist >= 500 || dist <= 0) //If the distance gets over 500cm OR under 0cm,
-    //the measurement is no longer accurate.
-    {
-    Serial.println("No measurement"); //So the serial monitor displays “No
-    //measurement”
+    return distance
     }
-    else //otherwise
-    {
-    Serial.print(dist); //The calculated distance is shown on the serial monitor.
-    Serial.println("cm");
-    }
-    delay(1000); //This command causes a short break between the measurements.
-    }
-    */
 }
 
 // Retourne "true" si le detecteur de mouvement detecte un mouvement.
@@ -178,19 +153,21 @@ bool detecteurMouvement(){
     int movementstatus=0; //The word “movementstatus” stands for the value 0. Later
     //on there will be saved if a movement is detected or not
     movementstatus=digitalRead(pin_detecteur_mouvement);
-    //(command: digitalRead). The result will be safed under “movementstatus”. (HIGH
+    //(command: digitalRead). The result will be saved under “movementstatus”. (HIGH
     //means 5V and LOW means 0V)
     if(movementstatus==HIGH) {//if a movement is detected (voltage signal high) ..
         return true;
-    } //close program part of the IF-command
+    }
     else {
         return false;
     }
 }
 
 void setup() {
+    setTime(17,35,0,26,7,2016);
     pinMode(pin_detecteur_mouvement, INPUT); // Le pin connecté au detecteur de mouvement est définit comme une entrée.
-    pinMode(pin_detecteur_distance, INPUT); // Le pin connecté au detecteur de distance est définit comme une entrée. EN FAIT IL FAUT 2 PIN
+    pinMode(pin_detecteur_distance, OUTPUT); //”pin_detecteur_distance” est une sortie. (capteur d'ultrasons)
+    pinMode(pin_emetteur_distance, INPUT); //”pin_emetteur_distance” est une entrée. (emetteur d'ultrasons)
     pinMode(pin_temperature, INPUT); // Le pin connecté au detecteur de température est définit comme une entrée.
 
     for (int k=1; k<14; k++){ // On définit les pins responsable de l'alimntation des LEDs comme des sorties.
