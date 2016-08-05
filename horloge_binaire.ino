@@ -46,7 +46,7 @@ const int pin_temperature = 17;
 // Fonction pour passer d'un nombre décimal à un nombre binaire et le stocker dans une liste (4 bits donc 0<= nombre < 16). Utilisation de la division euclidienne.
 bool* decimalVersBinaire(const int nombre_decimal){
   const int nb_bits = 4;
-  bool reste[nb_bits];
+  bool* reste = new bool[nb_bits];
   int quotient = nombre_decimal;
   if (nombre_decimal == 0) {
     for (int k=0; k<nb_bits; k++){
@@ -84,9 +84,11 @@ void afficheNombreSurLED (const int nombre_decimal, const int colonne){
   bool* nombre_binaire = decimalVersBinaire(nombre_decimal);
   for (int ligne=0; ligne<4; ligne++){
     allumeLED(ligne, colonne, nombre_binaire[ligne]);
-    delay(5);
+    delay(1);
     eteindreLED(ligne, colonne);
+    delay(1);
   }
+  delete(nombre_binaire);
 }
 
 // Renvoie 2 chiffres lorsqu'on rentre un nombre à 2 chiffres (ex: en entre 15 on retourne 1 et 5).
@@ -125,28 +127,27 @@ void affichageHeure(){
 }
 
 // Récupère la distance du capteur à ultrasons.
-int distanceCapteur(){
-    long temps_aller_retour=0;
-    long distance=0; //The value “distance” will save the calculated distance. It will
-    //start with “0”. Instead of “int” we are using “long” for this value, to save a
-    //bigger number.
-    digitalWrite(pin_detecteur_distance, LOW); //Low voltage on the trigger pin to produce a
-    //clear signal.
-    delay(5); //….for 5 milliseconds.
-    digitalWrite(pin_detecteur_distance, HIGH); //Creating the soundwave.
-    delay(10); //..for 10 milliseconds.
-    digitalWrite(pin_detecteur_distance, LOW); //Stop creating the soundwave.
-    52 
-    time = pulseIn(pin_emetteur_distance, HIGH); //With the command pulseIn (Capital “i” in the
-    //front of the “n”) the arduino board measures the time between sending and
-    //receiving the soundwave.
-    distance = (temps_aller_retour/2) / 29.1; //This calculation transforms the measured time into
-    //the distance in centimeter. (The sound needs 29,1 seconds for one centimeter.
-    //The time gets divided with two, because we only want to get one distance and
-    //not the two ways that the soundwave has to take).
-    return distance
-    }
-}
+//int distanceCapteur(){
+//    long temps_aller_retour=0;
+//    long distance=0; //The value “distance” will save the calculated distance. It will
+//    //start with “0”. Instead of “int” we are using “long” for this value, to save a
+//    //bigger number.
+//    digitalWrite(pin_detecteur_distance, LOW); //Low voltage on the trigger pin to produce a
+//    //clear signal.
+//    delay(5); //….for 5 milliseconds.
+//    digitalWrite(pin_detecteur_distance, HIGH); //Creating the soundwave.
+//    delay(10); //..for 10 milliseconds.
+//    digitalWrite(pin_detecteur_distance, LOW); //Stop creating the soundwave.
+//    time = pulseIn(pin_emetteur_distance, HIGH); //With the command pulseIn (Capital “i” in the
+//    //front of the “n”) the arduino board measures the time between sending and
+//    //receiving the soundwave.
+//    distance = (temps_aller_retour/2) / 29.1; //This calculation transforms the measured time into
+//    //the distance in centimeter. (The sound needs 29,1 seconds for one centimeter.
+//    //The time gets divided with two, because we only want to get one distance and
+//    //not the two ways that the soundwave has to take).
+//    return distance
+//    }
+//}
 
 // Retourne "true" si le detecteur de mouvement detecte un mouvement.
 bool detecteurMouvement(){
@@ -190,9 +191,10 @@ void loop() {
 //    if (distance == distance_temperature){
 //      // affichageTemperature(temperature);
 //    }
-//  }
-  affichageHeure();
-  int heure = hour();
-  Serial.println(heure);
-  Serial.println(minute());
+////  }
+//  affichageHeure();
+//  int heure = hour();
+//  Serial.println(heure);
+//  Serial.println(minute());
+afficheNombreSurLED (1, 0);
 }
