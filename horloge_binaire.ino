@@ -109,7 +109,9 @@ int separeQuatreChiffres(const int nombre){
 // Affiche l'heure.
 void affichageHeure(){
   int dizaine_heure, unite_heure = separeDeuxChiffres(hour());
-  int dizaine_minute, unite_minute = separeDeuxChiffres(minute());  int k = 0;    dizaine_heure, unite_heure = separeDeuxChiffres(hour());
+  int dizaine_minute, unite_minute = separeDeuxChiffres(minute());
+  int k = 0;
+  dizaine_heure, unite_heure = separeDeuxChiffres(hour());
   dizaine_minute, unite_minute = separeDeuxChiffres(minute());
   afficheNombreSurLED(dizaine_heure, 0);
   afficheNombreSurLED(unite_heure, 1);
@@ -121,9 +123,9 @@ void affichageHeure(){
 int temperatureCapteur(){
     int temperature = 0; // temperature mesuree.
     int temp[10]; // creation du tableau pour faire une moyenne de mesures.
-    int time= 20; // temps entre chaque mesure.
-    for (int i=0, i<9, ++){ // on recupere une mesure de temperature pour chaque cases du tableau
-        temp[i] = map(analogRead(pin_temperature), 0, 410, -50, 150);
+    int time = 20; // temps entre chaque mesure.
+    for (int k=0; k<9; k++){ // On recupere une mesure de temperature pour chaque cases du tableau
+        temp[k] = map(analogRead(pin_temperature), 0, 410, -50, 150);
         delay(time);
     }
     temp[9] = map(analogRead(pin_temperature), 0, 410, -50, 150);
@@ -134,8 +136,10 @@ int temperatureCapteur(){
     //between 0V and 2V at the analog port). The sensor outputs this voltage values
     //if it measures temperature between -50°C and 150°C. With the “map command”
     //these values get converted into degree values between -50°C and 150°C.
-    temperature=(temp[0]+temp[1]+temp[2]+temp[3]+temp[4]+temp[5]+temp[6]+temp[7]+temp[8]+temp[9])/10;
-    // on fait la moyenne des differentes mesures stockees dans le tableau pour obtenir une valeure de temperature.
+    for (int k=0; k=9; k++){ // on fait la moyenne des differentes mesures stockees dans le tableau pour obtenir une valeure de temperature.
+        temperature += temp[k];
+    }
+    temperature=temperature/10;
     return temperature
 }
 
@@ -203,7 +207,7 @@ void loop() {
     if (detecteurMouvement()) {
         unsigned long temps, temps_relatif = millis(), millis();
     }
-    while (temps_relatif - temps < temps_affichage) {
+    while ((temps_relatif-temps)<temps_affichage) {
         switch (distance) {
             case distance_vide:
                 // do commande précédente.
