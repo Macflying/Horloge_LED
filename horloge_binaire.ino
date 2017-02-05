@@ -2,10 +2,10 @@
 #include <TimeLib.h>
 
 // Les variables
-const int distance_vide = 0;
-const int distance_horloge = 0;
-const int distance_date = 0;
-const int distance_temperature = 0;
+const int distance_vide = 0; // distance lorsque aucun obstacle est en face du detecteur.
+const int distance_horloge = 0; // distance au detecteur pour afficher l'heure.
+const int distance_date = 0; // distance au detecteur pour aficher la date.
+const int distance_temperature = 0; // distance au detecteur pour afficher la temperature.
 unsigned long temps_affichage = 1000000;
 
 //////// Il y a une bibliothèque "time" pour gérer le temps avec ou sans horloge externe.
@@ -67,10 +67,10 @@ bool* decimalVersBinaire(const int nombre_decimal){
 // Allume la led correspondante au ligne et colonne donnés si a_allumer est vraie.
 void allumeLED (const int ligne, const int colonne, bool a_allumer){
   if (a_allumer){
-    digitalWrite(pin_heure[ligne][colonne], LOW); // on fait 1-nombre_binaire si on met le pin en sortie c'est-à-dire l'alimentation ne vient pas de l'arduino.
+    digitalWrite(pin_heure[ligne][colonne], LOW); // LED allume : on fait (1 - nombre_binaire) si on met le pin en sortie c'est-à-dire l'alimentation ne vient pas de l'arduino.
   }
   else {
-    digitalWrite(pin_heure[ligne][colonne], HIGH); // on fait 1-nombre_binaire si on met le pin en sortie c'est-à-dire l'alimentation ne vient pas de l'arduino.
+    digitalWrite(pin_heure[ligne][colonne], HIGH); // LED eteinte.
   }
 }
 
@@ -84,9 +84,8 @@ void afficheNombreSurLED (const int nombre_decimal, const int colonne){
   bool* nombre_binaire = decimalVersBinaire(nombre_decimal);
   for (int ligne=0; ligne<4; ligne++){
     allumeLED(ligne, colonne, nombre_binaire[ligne]);
-    delay(1);
-    eteindreLED(ligne, colonne);
-    delay(1);
+   delay(1);
+   eteindreLED(ligne, colonne);
   }
   delete(nombre_binaire);
 }
@@ -107,53 +106,74 @@ int separeQuatreChiffres(const int nombre){
   return millier, centaine, dizaine, unite;
 }
 
-// Affiche l'heure pendant un certains temps tant que le capteur de distance ne reçoit pas de nouvelles valeurs.
+// Affiche l'heure.
 void affichageHeure(){
-//  int distance = distanceCapteur();
   int dizaine_heure, unite_heure = separeDeuxChiffres(hour());
-  int dizaine_minute, unite_minute = separeDeuxChiffres(minute());
-  unsigned long temps, temps_relatif = millis(), millis();
-  int k = 0;
-  while (1){ //((temps_relatif - temps < temps_affichage) && ((distance == distance_vide) || (distance == distance_horloge))){
-//    distance = distanceCapteur();
-    dizaine_heure, unite_heure = separeDeuxChiffres(hour());
-    dizaine_minute, unite_minute = separeDeuxChiffres(minute());
-    afficheNombreSurLED(dizaine_heure, 0);
-    afficheNombreSurLED(unite_heure, 1);
-    afficheNombreSurLED(dizaine_minute, 2);
-    afficheNombreSurLED(unite_minute, 3);
-    temps_relatif = millis();
-  }
+  int dizaine_minute, unite_minute = separeDeuxChiffres(minute());  int k = 0;    dizaine_heure, unite_heure = separeDeuxChiffres(hour());
+  dizaine_minute, unite_minute = separeDeuxChiffres(minute());
+  afficheNombreSurLED(dizaine_heure, 0);
+  afficheNombreSurLED(unite_heure, 1);
+  afficheNombreSurLED(dizaine_minute, 2);
+  afficheNombreSurLED(unite_minute, 3);
+}
+
+// recupere la temperature sur le capteur de temperature.
+int temperatureCapteur(){
+    int temperature = 0; // temperature mesuree.
+    int temp[10]; // creation du tableau pour faire une moyenne de mesures.
+    int time= 20; // temps entre chaque mesure.
+    for (int i=0, i<9, ++){ // on recupere une mesure de temperature pour chaque cases du tableau
+        temp[i] = map(analogRead(pin_temperature), 0, 410, -50, 150);
+        delay(time);
+    }
+    temp[9] = map(analogRead(pin_temperature), 0, 410, -50, 150);
+    //“map(a,b,c,d,e)” - This is a “Map command”. With this command it is possible
+    //to change a read out value (a) from one region between (b) and (c) into a
+    //region between (d) and (e). In our case this means: The sensor value gets read out right in the map
+    //command “analogRead(pin_temperature)”. The value should be between 0 and 410 (= values
+    //between 0V and 2V at the analog port). The sensor outputs this voltage values
+    //if it measures temperature between -50°C and 150°C. With the “map command”
+    //these values get converted into degree values between -50°C and 150°C.
+    temperature=(temp[0]+temp[1]+temp[2]+temp[3]+temp[4]+temp[5]+temp[6]+temp[7]+temp[8]+temp[9])/10;
+    // on fait la moyenne des differentes mesures stockees dans le tableau pour obtenir une valeure de temperature.
+    return temperature
+}
+
+// affiche la temperature.
+void affichageTemperature(){
+    int dizaine_temperature, unite_temperature = separeDeuxChiffres(temperatureCapteur())
+  afficheNombreSurLED(dizaine_temperature, 2);
+  afficheNombreSurLED(unite_temperature, 3);
 }
 
 // Récupère la distance du capteur à ultrasons.
-//int distanceCapteur(){
-//    long temps_aller_retour=0;
-//    long distance=0; //The value “distance” will save the calculated distance. It will
-//    //start with “0”. Instead of “int” we are using “long” for this value, to save a
-//    //bigger number.
-//    digitalWrite(pin_detecteur_distance, LOW); //Low voltage on the trigger pin to produce a
-//    //clear signal.
-//    delay(5); //….for 5 milliseconds.
-//    digitalWrite(pin_detecteur_distance, HIGH); //Creating the soundwave.
-//    delay(10); //..for 10 milliseconds.
-//    digitalWrite(pin_detecteur_distance, LOW); //Stop creating the soundwave.
-//    time = pulseIn(pin_emetteur_distance, HIGH); //With the command pulseIn (Capital “i” in the
-//    //front of the “n”) the arduino board measures the time between sending and
-//    //receiving the soundwave.
-//    distance = (temps_aller_retour/2) / 29.1; //This calculation transforms the measured time into
-//    //the distance in centimeter. (The sound needs 29,1 seconds for one centimeter.
-//    //The time gets divided with two, because we only want to get one distance and
-//    //not the two ways that the soundwave has to take).
-//    return distance
-//    }
-//}
+int distanceCapteur(){
+    long temps_aller_retour=0;
+    long distance=0; //The value “distance” will save the calculated distance. It will
+    //start with “0”. Instead of “int” we are using “long” for this value, to save a
+    //bigger number.
+    digitalWrite(pin_detecteur_distance, LOW); //Low voltage on the trigger pin to produce a
+    //clear signal.
+    delay(5); //….for 5 milliseconds.
+    digitalWrite(pin_detecteur_distance, HIGH); //Creating the soundwave.
+    delay(10); //..for 10 milliseconds.
+    digitalWrite(pin_detecteur_distance, LOW); //Stop creating the soundwave.
+    temps_aller_retour = pulseIn(pin_emetteur_distance, HIGH); //With the command pulseIn (Capital “i” in the
+    //front of the “n”) the arduino board measures the time between sending and
+    //receiving the soundwave.
+    distance = (temps_aller_retour/2) / 29.1; //This calculation transforms the measured time into
+    //the distance in centimeter. (The sound needs 29,1 seconds for one centimeter.
+    //The time gets divided with two, because we only want to get one distance and
+    //not the two ways that the soundwave has to take).
+    return distance
+    }
+}
 
 // Retourne "true" si le detecteur de mouvement detecte un mouvement.
 bool detecteurMouvement(){
     int movementstatus=0; //The word “movementstatus” stands for the value 0. Later
     //on there will be saved if a movement is detected or not
-    movementstatus=digitalRead(pin_detecteur_mouvement);
+    movementstatus = digitalRead(pin_detecteur_mouvement);
     //(command: digitalRead). The result will be saved under “movementstatus”. (HIGH
     //means 5V and LOW means 0V)
     if(movementstatus==HIGH) {//if a movement is detected (voltage signal high) ..
@@ -171,30 +191,47 @@ void setup() {
     pinMode(pin_emetteur_distance, INPUT); //”pin_emetteur_distance” est une entrée. (emetteur d'ultrasons)
     pinMode(pin_temperature, INPUT); // Le pin connecté au detecteur de température est définit comme une entrée.
 
-    for (int k=1; k<14; k++){ // On définit les pins responsable de l'alimntation des LEDs comme des sorties.
+    for (int k=1; k<14; k++){ // On définit les pins responsables de l'alimntation des LEDs comme des sorties.
         pinMode(k, OUTPUT);
         digitalWrite(k, 1);
     }
+    int commande_precedente = 2;
 }
 
 void loop() {
 //  // put your main code here, to run repeatedly:
-//  int distance = 0;
-//  if (detecteurMouvement() == true){
-//    distance = distanceCapteur();
-//    if (distance == distance_horloge){
-//      // affichageHeure(heures_binaire);
-//    }
-//    if (distance == distance_date){
-//      // affichageDate(date);
-//    }
-//    if (distance == distance_temperature){
-//      // affichageTemperature(temperature);
-//    }
-////  }
-//  affichageHeure();
-//  int heure = hour();
-//  Serial.println(heure);
-//  Serial.println(minute());
-afficheNombreSurLED (1, 0);
+    if (detecteurMouvement()) {
+        unsigned long temps, temps_relatif = millis(), millis();
+    }
+    while (temps_relatif - temps < temps_affichage) {
+        switch (distance) {
+            case distance_vide:
+                // do commande précédente.
+                switch (commande_precedente) {
+                    case 1:
+                        // affichageDate();
+                        break;
+                    case 2:
+                        // affichageHeure();
+                        break;
+                    case 3:
+                        // affichageTemperature();
+                        break;
+                }
+                break;
+            case distance_date:
+                // affichageDate();
+                commande_precedente = 1
+                break;
+            case distance_horloge:
+                // affichageHeure();
+                commande_precedente = 2
+                break;
+            case distance_temperature:
+                // affichageTemperature();
+                commande_precedente = 3
+                break;
+        }
+        temps_relatif = millis();
+    }
 }
