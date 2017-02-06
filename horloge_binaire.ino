@@ -170,7 +170,6 @@ int distanceCapteur(){
     //The time gets divided with two, because we only want to get one distance and
     //not the two ways that the soundwave has to take).
     return distance
-    }
 }
 
 // Retourne "true" si le detecteur de mouvement detecte un mouvement.
