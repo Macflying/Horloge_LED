@@ -7,6 +7,14 @@ const int distance_horloge = 0; // distance au detecteur pour afficher l'heure.
 const int distance_date = 0; // distance au detecteur pour aficher la date.
 const int distance_temperature = 0; // distance au detecteur pour afficher la temperature.
 unsigned long temps_affichage = 1000000;
+int commande_defaut = 2; // on initialise pour afficher l'heure
+
+enum TypeCommande {
+    defaut = 2,
+    AffichageDate = 1,
+    AffichageHeure = 2,
+    AffichageTemperature = 3
+};
 
 //////// Il y a une bibliothèque "time" pour gérer le temps avec ou sans horloge externe.
 
@@ -140,14 +148,14 @@ int temperatureCapteur(){
         temperature += temp[k];
     }
     temperature=temperature/10;
-    return temperature
+    return temperature;
 }
 
 // affiche la temperature.
 void affichageTemperature(){
-    int dizaine_temperature, unite_temperature = separeDeuxChiffres(temperatureCapteur())
-  afficheNombreSurLED(dizaine_temperature, 2);
-  afficheNombreSurLED(unite_temperature, 3);
+    int dizaine_temperature, unite_temperature = separeDeuxChiffres(temperatureCapteur());
+    afficheNombreSurLED(dizaine_temperature, 2);
+    afficheNombreSurLED(unite_temperature, 3);
 }
 
 // Récupère la distance du capteur à ultrasons.
@@ -169,7 +177,7 @@ int distanceCapteur(){
     //the distance in centimeter. (The sound needs 29,1 seconds for one centimeter.
     //The time gets divided with two, because we only want to get one distance and
     //not the two ways that the soundwave has to take).
-    return distance
+    return distance;
 }
 
 // Retourne "true" si le detecteur de mouvement detecte un mouvement.
@@ -188,6 +196,7 @@ bool detecteurMouvement(){
 }
 
 void setup() {
+  
     setTime(17,35,0,26,7,2016);
     pinMode(pin_detecteur_mouvement, INPUT); // Le pin connecté au detecteur de mouvement est définit comme une entrée.
     pinMode(pin_detecteur_distance, OUTPUT); //”pin_detecteur_distance” est une sortie. (capteur d'ultrasons)
@@ -198,41 +207,46 @@ void setup() {
         pinMode(k, OUTPUT);
         digitalWrite(k, 1);
     }
-    int commande_precedente = 2;
 }
 
 void loop() {
 //  // put your main code here, to run repeatedly:
+    int distance = distanceCapteur();
+    unsigned long temps, temps_relatif;
     if (detecteurMouvement()) {
-        unsigned long temps, temps_relatif = millis(), millis();
+        temps, temps_relatif = millis(), millis();
     }
     while ((temps_relatif-temps)<temps_affichage) {
         switch (distance) {
             case distance_vide:
                 // do commande précédente.
-                switch (commande_precedente) {
-                    case 1:
+                switch (commande_defaut) {
+                    case TypeCommande.AffichageDate:
                         // affichageDate();
                         break;
-                    case 2:
-                        // affichageHeure();
+                    case TypeCommande.AffichageHeure:
+                        affichageHeure();
                         break;
-                    case 3:
-                        // affichageTemperature();
+                    case TypeCommande.AffichageTemperature:
+                        affichageTemperature();
                         break;
                 }
                 break;
             case distance_date:
                 // affichageDate();
-                commande_precedente = 1
+                commande_defaut = TypeCommande.AffichageDate;
                 break;
             case distance_horloge:
-                // affichageHeure();
-                commande_precedente = 2
+                affichageHeure();
+                commande_defaut = TypeCommande.AffichageHeure;
                 break;
             case distance_temperature:
-                // affichageTemperature();
-                commande_precedente = 3
+                affichageTemperature();
+                commande_defaut = TypeCommande.AffichageTemperature;
+                break;
+            default:
+                affichageHeure();
+                commande_defaut = TypeCommande.defaut;
                 break;
         }
         temps_relatif = millis();
