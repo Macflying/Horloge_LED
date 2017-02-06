@@ -6,15 +6,14 @@ const int distance_vide = 0; // distance lorsque aucun obstacle est en face du d
 const int distance_horloge = 0; // distance au detecteur pour afficher l'heure.
 const int distance_date = 0; // distance au detecteur pour aficher la date.
 const int distance_temperature = 0; // distance au detecteur pour afficher la temperature.
-unsigned long temps_affichage = 1000000;
-int commande_defaut = 2; // on initialise pour afficher l'heure
+unsigned long temps_affichage = 1000000; // temps d'affichage après une detection de mouvement.
 
-enum TypeCommande {
-    defaut = 2,
+typedef enum {
     AffichageDate = 1,
     AffichageHeure = 2,
     AffichageTemperature = 3
-};
+}TypeCommande;
+TypeCommande commande_defaut = TypeCommande.AffichageHeure; // on initialise pour afficher l'heure
 
 //////// Il y a une bibliothèque "time" pour gérer le temps avec ou sans horloge externe.
 
@@ -230,6 +229,10 @@ void loop() {
                     case TypeCommande.AffichageTemperature:
                         affichageTemperature();
                         break;
+                    default:
+                       affichageHeure();
+                       commande_defaut = TypeCommande.defaut;
+                       break;
                 }
                 break;
             case distance_date:
@@ -243,10 +246,6 @@ void loop() {
             case distance_temperature:
                 affichageTemperature();
                 commande_defaut = TypeCommande.AffichageTemperature;
-                break;
-            default:
-                affichageHeure();
-                commande_defaut = TypeCommande.defaut;
                 break;
         }
         temps_relatif = millis();
